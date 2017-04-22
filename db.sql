@@ -36,4 +36,4 @@
  update pic_table set label2 = 33 where label1='X';
  update pic_table set label2 = 34 where label1='Y';
  update pic_table set label2 = 35 where label1='Z';
- update pic_table set label2 = label1 where labe1 is not null and label2 is null;
+ update pic_table set label2 = label1 where label1 is not null and label2 is null;
