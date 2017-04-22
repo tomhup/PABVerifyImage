@@ -17,7 +17,7 @@ def getImg(num):
         f.write(a.read())
         f.close()
 
-def splitimg(img):
+def splitImg(img):
     nimg = pylab.imread(img)
     x,y,z = nimg.shape
     pic1 = nimg[:,0 :20,:]
@@ -27,7 +27,7 @@ def splitimg(img):
     return pic1,pic2,pic3,pic4
 
 
-def insert2db(filename):
+def insert2DB(filename):
     data = splitimg(filename)
     for i in data:
         conn = sqlite3.connect('picdata')
@@ -52,8 +52,7 @@ def labelPic(id):
     cv2.destroyAllWindows();
     input = chr(input).upper()
     sql = '''update  pic_table set label1='%s'  where id =%d ''' % (input, id)
-    print
-    sql
+    print sql
     conn.execute(sql)
     conn.commit()
     conn.close()

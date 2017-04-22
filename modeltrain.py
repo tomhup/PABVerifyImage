@@ -33,7 +33,6 @@ def showPredicPic(id):
     img = pm(pic_data)
     xi = pm3(pm2(img))
     yi = model.predict(xi)
-    print "pridict===>%s" % (yi)
     if int(yi) >= 10:
         yi = chr(yi + 55)
     print "pridict===>%s" % (yi)
