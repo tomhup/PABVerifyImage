@@ -58,7 +58,7 @@ for k,v in pic_data:
 d = map(procRGB2Data,d)
 t = map(lambda x:int(x), t)
 
-rf_model = RandomForestClassifier(n_estimators=200)
+rf_model = RandomForestClassifier(n_estimators=100)
 rf_model.fit(d,t)
 
 svc_model = SVC(C=3)
@@ -82,5 +82,5 @@ for i in range(len(ty)):
 conn.commit()
 conn.close()
 
-for id in range(6200,6210):
+for id in range(16200,16300):
     showPredicPic(id,model)
