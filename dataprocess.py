@@ -1,4 +1,5 @@
-
+#!/usr/bin/python
+# coding utf8
 import sqlite3
 import base64
 import cPickle

@@ -1,4 +1,5 @@
-
+#!/usr/bin/python
+# coding utf8
 from sklearn.metrics import  confusion_matrix
 from sklearn import metrics
 from sklearn.svm import SVC
@@ -17,6 +18,16 @@ pm3 = lambda x: x.reshape((440,))
 procRGB2Data = lambda x : pm3(pm2(pm(x)))
 model = None
 
+def splitImg(img):
+    nimg = cv2.imread(img)
+    x,y,z = nimg.shape
+    pic1 = nimg[:,0 :20,:]
+    pic2 = nimg[:,20:40,:]
+    pic3 = nimg[:,40:60,:]
+    pic4 = nimg[:,60:80,:]
+    return pic1,pic2,pic3,pic4
+
+
 def getDataByID(id):
     conn = sqlite3.connect('picdata')
     sql = '''select pic_data,label1 from pic_table where id =%d''' % (id)
@@ -33,7 +44,7 @@ def showPredicPic(id,model):
     print "id:%s label1====>%s" % (id,label1)
     img = pm(pic_data)
     xi = pm3(pm2(img))
-    yi = model.predict(xi)
+    yi = model.predict(xi)[0]
     if int(yi) >= 10:
         yi = chr(yi + 55)
     print "id:%s pridict===>%s" %(id ,yi)
@@ -41,6 +52,25 @@ def showPredicPic(id,model):
     cv2.resizeWindow(str(yi), 400, 400)
     cv2.moveWindow(str(yi), 400, 200)
     cv2.imshow(str(yi), img)
+    cv2.waitKey(1500)
+    cv2.destroyAllWindows()
+
+def showPredicbyFile(file,model):
+    data = splitImg(file)
+    label = ''
+
+    for i in data:
+        x=pm3(pm2(i))
+        yi = model.predict(x)[0]
+        if int(yi)>=10:
+            yi=chr(yi + 55)
+        label = label+str(yi)
+    print label
+    img = cv2.imread(file)
+    cv2.namedWindow(label, 0)
+    cv2.resizeWindow(label, 400, 400)
+    cv2.moveWindow(label, 400, 200)
+    cv2.imshow(label, img)
     cv2.waitKey(1500)
     cv2.destroyAllWindows()
 
@@ -85,7 +115,7 @@ if  __name__=='__main__':
     if len(sys.argv)>2:
         x,y = int(sys.argv[1]),int(sys.argv[2])
     else:
-        x,y = 100,110
+        x,y = 100,101
     if os.path.exists('model.data'):
         model = cPickle.load(open('model.data','r'))
     else:
