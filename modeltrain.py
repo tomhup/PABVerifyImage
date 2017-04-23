@@ -20,12 +20,12 @@ model = None
 
 def splitImg(img):
     nimg = cv2.imread(img)
-    x,y,z = nimg.shape
-    pic1 = nimg[:,0 :20,:]
-    pic2 = nimg[:,20:40,:]
-    pic3 = nimg[:,40:60,:]
-    pic4 = nimg[:,60:80,:]
-    return pic1,pic2,pic3,pic4
+    # x,y,z = nimg.shape
+    pic1 = nimg[:, 0:20, :]
+    pic2 = nimg[:, 20:40, :]
+    pic3 = nimg[:, 40:60, :]
+    pic4 = nimg[:, 60:80, :]
+    return pic1, pic2, pic3, pic4
 
 
 def getDataByID(id):
@@ -54,18 +54,17 @@ def showPredicPic(id,model):
     cv2.imshow(str(yi), img)
     cv2.waitKey(1500)
     cv2.destroyAllWindows()
+    return yi
 
 def showPredicbyFile(file,model):
     data = splitImg(file)
     label = ''
-
     for i in data:
         x=pm3(pm2(i))
         yi = model.predict(x)[0]
         if int(yi)>=10:
             yi=chr(yi + 55)
         label = label+str(yi)
-    print label
     img = cv2.imread(file)
     cv2.namedWindow(label, 0)
     cv2.resizeWindow(label, 400, 400)
@@ -73,7 +72,7 @@ def showPredicbyFile(file,model):
     cv2.imshow(label, img)
     cv2.waitKey(1500)
     cv2.destroyAllWindows()
-
+    return label
 
 def trainModel():
     conn = sqlite3.connect('picdata')
@@ -95,8 +94,8 @@ def trainModel():
     svc_model.fit(d, t)
     model = rf_model
     ty = model.predict(d)
-    con_matrix = confusion_matrix(t, ty)
-    classify_report = metrics.classification_report(t, ty)
+    # con_matrix = confusion_matrix(t, ty)
+    # classify_report = metrics.classification_report(t, ty)
     conn = sqlite3.connect('picdata')
     for i in range(len(ty)):
         if ty[i] >= 10:
@@ -109,17 +108,15 @@ def trainModel():
     conn.close()
     return model
 
-
-
-if  __name__=='__main__':
-    if len(sys.argv)>2:
-        x,y = int(sys.argv[1]),int(sys.argv[2])
+if __name__ == '__main__':
+    if len(sys.argv) > 2:
+        x, y = int(sys.argv[1]), int(sys.argv[2])
     else:
-        x,y = 100,101
+        x, y = 100, 101
     if os.path.exists('model.data'):
-        model = cPickle.load(open('model.data','r'))
+        model = cPickle.load(open('model.data', 'r'))
     else:
         model = trainModel()
-        cPickle.dump(model,open('model.data','w'))
-    for i in range(x,y):
-        showPredicPic(i,model)
+        cPickle.dump(model, open('model.data', 'w'))
+    for i in range(x, y):
+        showPredicPic(i, model)
