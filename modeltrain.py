@@ -1,53 +1,40 @@
 #!/usr/bin/python
 # coding utf8
-from sklearn.metrics import  confusion_matrix
+from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-import sys,os
+import sys
+import os
 import sqlite3
-import base64
 import cPickle
 import cv2
 import warnings
+import dataprocess as dp
+
 warnings.filterwarnings("ignore")
 
-pm  = lambda x: cPickle.loads(base64.b64decode(x))
-pm2 = lambda x: x[:, :, 0] * 0.2 + x[:, :, 1] * 0.2 + x[:, :, 2] * 0.2
-pm3 = lambda x: x.reshape((440,))
-procRGB2Data = lambda x : pm3(pm2(pm(x)))
-model = None
 
-def splitImg(img):
-    nimg = cv2.imread(img)
-    # x,y,z = nimg.shape
-    pic1 = nimg[:, 0:20, :]
-    pic2 = nimg[:, 20:40, :]
-    pic3 = nimg[:, 40:60, :]
-    pic4 = nimg[:, 60:80, :]
-    return pic1, pic2, pic3, pic4
-
-
-def getDataByID(id):
+def getdatabyid(idx):
     conn = sqlite3.connect('picdata')
-    sql = '''select pic_data,label1 from pic_table where id =%d''' % (id)
+    sql = '''select pic_data,label1 from pic_table where id =%d''' % idx
     print sql
-    cur = conn.cursor();
+    cur = conn.cursor()
     cur.execute(sql)
     data = cur.fetchall()
     conn.close()
     return data[0]
 
 
-def showPredicPic(id,model):
-    pic_data, label1 = getDataByID(id)
-    print "id:%s label1====>%s" % (id,label1)
-    img = pm(pic_data)
-    xi = pm3(pm2(img))
+def showpredicpic(idx, model):
+    pic_data, label1 = getdatabyid(idx)
+    print "id:%s label1====>%s" % (idx, label1)
+    img = dp.pm(pic_data)
+    xi = dp.pm3(dp.pm2(img))
     yi = model.predict(xi)[0]
     if int(yi) >= 10:
         yi = chr(yi + 55)
-    print "id:%s pridict===>%s" %(id ,yi)
+    print "id:%s pridict===>%s" % (idx, yi)
     cv2.namedWindow(str(yi), 0)
     cv2.resizeWindow(str(yi), 400, 400)
     cv2.moveWindow(str(yi), 400, 200)
@@ -56,16 +43,17 @@ def showPredicPic(id,model):
     cv2.destroyAllWindows()
     return yi
 
-def showPredicbyFile(file,model):
-    data = splitImg(file)
+
+def showpredicbyfile(filename, model):
+    data = dp.splitimg(filename)
     label = ''
     for i in data:
-        x=pm3(pm2(i))
+        x = dp.pm3(dp.pm2(i))
         yi = model.predict(x)[0]
-        if int(yi)>=10:
-            yi=chr(yi + 55)
+        if int(yi) >= 10:
+            yi = chr(yi + 55)
         label = label+str(yi)
-    img = cv2.imread(file)
+    img = cv2.imread(filename)
     cv2.namedWindow(label, 0)
     cv2.resizeWindow(label, 400, 400)
     cv2.moveWindow(label, 400, 200)
@@ -74,49 +62,50 @@ def showPredicbyFile(file,model):
     cv2.destroyAllWindows()
     return label
 
-def trainModel():
+
+def trainmodel():
     conn = sqlite3.connect('picdata')
     sql = '''select pic_data,label2 from pic_table where label2 is not null'''
     cur = conn.cursor()
     cur.execute(sql)
     pic_data = cur.fetchall()
     conn.close()
-    d = [];
+    d = []
     t = []
     for k, v in pic_data:
         d.append(k)
         t.append(v)
-    d = map(procRGB2Data, d)
+    d = map(dp.procRGB2Data, d)
     t = map(lambda x: int(x), t)
     rf_model = RandomForestClassifier(n_estimators=100)
     rf_model.fit(d, t)
     svc_model = SVC(C=3)
     svc_model.fit(d, t)
-    model = rf_model
-    ty = model.predict(d)
+    modell = rf_model
+    ty = modell.predict(d)
     # con_matrix = confusion_matrix(t, ty)
     # classify_report = metrics.classification_report(t, ty)
     conn = sqlite3.connect('picdata')
-    for i in range(len(ty)):
-        if ty[i] >= 10:
-            label3 = chr(55 + ty[i])
+    for idx in range(len(ty)):
+        if ty[idx] >= 10:
+            label3 = chr(55 + ty[idx])
         else:
-            label3 = str(ty[i])
-        sql = '''update pic_table set label3 ='%s' where id = %d''' % (label3, i + 1)
+            label3 = str(ty[idx])
+        sql = '''update pic_table set label3 ='%s' where id = %d''' % (label3, idx + 1)
         conn.execute(sql)
     conn.commit()
     conn.close()
-    return model
+    return modell
 
 if __name__ == '__main__':
     if len(sys.argv) > 2:
-        x, y = int(sys.argv[1]), int(sys.argv[2])
+        inx, iny = int(sys.argv[1]), int(sys.argv[2])
     else:
-        x, y = 100, 101
+        inx, iny = 100, 101
     if os.path.exists('model.data'):
-        model = cPickle.load(open('model.data', 'r'))
+        pic_model = cPickle.load(open('model.data', 'r'))
     else:
-        model = trainModel()
-        cPickle.dump(model, open('model.data', 'w'))
-    for i in range(x, y):
-        showPredicPic(i, model)
+        pic_model = trainmodel()
+        cPickle.dump(pic_model, open('model.data', 'w'))
+    for ii in range(inx, iny):
+        showpredicpic(ii, pic_model)
