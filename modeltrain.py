@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # coding utf8
-from sklearn.metrics import confusion_matrix
-from sklearn import metrics
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 import sys
@@ -52,7 +50,7 @@ def showpredicbyfile(filename, model):
         yi = model.predict(x)[0]
         if int(yi) >= 10:
             yi = chr(yi + 55)
-        label = label+str(yi)
+        label = label + str(yi)
     img = cv2.imread(filename)
     cv2.namedWindow(label, 0)
     cv2.resizeWindow(label, 400, 400)
@@ -81,8 +79,8 @@ def trainmodel():
     rf_model.fit(d, t)
     svc_model = SVC(C=3)
     svc_model.fit(d, t)
-    modell = rf_model
-    ty = modell.predict(d)
+    model = rf_model
+    ty = model.predict(d)
     # con_matrix = confusion_matrix(t, ty)
     # classify_report = metrics.classification_report(t, ty)
     conn = sqlite3.connect('picdata')
@@ -95,7 +93,7 @@ def trainmodel():
         conn.execute(sql)
     conn.commit()
     conn.close()
-    return modell
+    return model
 
 if __name__ == '__main__':
     if len(sys.argv) > 2:
@@ -108,4 +106,7 @@ if __name__ == '__main__':
         pic_model = trainmodel()
         cPickle.dump(pic_model, open('model.data', 'w'))
     for ii in range(inx, iny):
-        showpredicpic(ii, pic_model)
+        # showpredicpic(ii, pic_model)
+        filename = './pic/%08d.jpg' % ii
+        piclabel = showpredicbyfile(filename, pic_model)
+        print("%s====>%s" % (filename, piclabel))
