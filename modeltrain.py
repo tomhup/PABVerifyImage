@@ -2,6 +2,8 @@
 from sklearn.metrics import  confusion_matrix
 from sklearn import metrics
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+
 import sqlite3
 import base64
 import cPickle
@@ -27,7 +29,7 @@ def getDataByID(id):
     return data[0]
 
 
-def showPredicPic(id):
+def showPredicPic(id,model):
     pic_data, label1 = getDataByID(id)
     print "label1====>%s" % (label1)
     img = pm(pic_data)
@@ -56,8 +58,14 @@ for k,v in pic_data:
 d = map(procRGB2Data,d)
 t = map(lambda x:int(x), t)
 
-model = SVC()
-model.fit(d,t)
+rf_model = RandomForestClassifier(n_estimators=200)
+rf_model.fit(d,t)
+
+svc_model = SVC(C=3)
+svc_model.fit(d,t)
+
+model =rf_model
+
 ty = model.predict(d)
 con_matrix=confusion_matrix(t,ty)
 classify_report = metrics.classification_report(t,ty)
@@ -74,5 +82,5 @@ for i in range(len(ty)):
 conn.commit()
 conn.close()
 
-for id in range(400,500):
-    showPredicPic(id)
+for id in range(6200,6210):
+    showPredicPic(id,model)
