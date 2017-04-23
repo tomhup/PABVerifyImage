@@ -1,10 +1,9 @@
-# conding utf8
 
 import sqlite3
 import base64
 import cPickle
-import pylab
 import cv2
+import sys
 import urllib2
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,7 +18,7 @@ def getImg(num):
         f.close()
 
 def splitImg(img):
-    nimg = pylab.imread(img)
+    nimg = cv2.imread(img)
     x,y,z = nimg.shape
     pic1 = nimg[:,0 :20,:]
     pic2 = nimg[:,20:40,:]
@@ -47,25 +46,28 @@ def labelPic(id):
     pic_data = cur.fetchall()[0][0]
     img = cPickle.loads(base64.b64decode(pic_data))
     cv2.namedWindow(str(id), 0);
-    cv2.resizeWindow("a", 400, 400)
+    cv2.resizeWindow(str(id), 400, 400)
+    cv2.moveWindow(str(id),400,200)
     cv2.imshow(str(id), img);
     input = cv2.waitKey(0);
     cv2.destroyAllWindows();
     input = chr(input).upper()
-    sql = '''update  pic_table set label1='%s'  where id =%d ''' % (input, id)
     if ord(input)>=65:
         label2 = str(ord(input) - 55)
     else:
         label2 = input
-    sql2 = '''update pic_table set label2 ='%s' where id =%d ''' %(label2,id)
-    print sql
-    print sql2
+    sql = '''update pic_table set label1='%s',label2 ='%s'  where id =%d ''' %(input,label2,id)
+    print(sql)
     conn.execute(sql)
-    conn.execute(sql2)
     conn.commit()
     conn.close()
 
 
 if __name__=='__main__':
-    for  i in range(900,1000):
+    if len(sys.argv)>2:
+        x,y = int(sys.argv[1]),int(sys.argv[2])
+    else:
+        x,y = 100,110
+
+    for  i in range(x,y):
         labelPic(i)
