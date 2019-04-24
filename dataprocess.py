@@ -15,7 +15,7 @@ pm3 = lambda x: x.reshape((440,))
 procRGB2Data = lambda x: pm3(pm2(pm(x)))
 
 def getimg(num):
-    url = 'https://ebank.sdb.com.cn/corporbank/VerifyImage'
+    url = ''
     for idx in range(num):
         a = urllib2.urlopen(url)
         pic_file = '%08d.jpg' % idx
